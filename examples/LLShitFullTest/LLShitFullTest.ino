@@ -1,5 +1,3 @@
-//#define DEBUG
-
 #define TESTBOARD_MEGA
 //#define TESTBOARD_UNO
 
@@ -29,7 +27,7 @@ namespace TESTMETRICS {
       7287,
       7283,
       7287,
-      7278,
+      7279,
       7295,
       0
     };
