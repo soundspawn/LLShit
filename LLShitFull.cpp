@@ -21,7 +21,7 @@ namespace LLSHITFULL_STRING {
 }
 
 LLSLogger::LLSLogger(){
-    char d[50];
+    char d[strlen(LLSHITFULL_STRING::DEFAULT_BASE_PATH_STRING)+1];
     strcpy_P(d, (PGM_P)pgm_read_word(&(LLSHITFULL_STRING::LLSHITFULL_STRING_TABLE[LLSHITFULL_STRING::DEFAULT_BASE_PATH])));
     this->logPath = new char(strlen(d));
 }
