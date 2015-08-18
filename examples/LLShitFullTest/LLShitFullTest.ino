@@ -75,9 +75,15 @@ void setup() {
   Serial.begin(9600);
   
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
+  Serial.println(F("Starting BaseLogger Test"));
   BaseLoggerTest();
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
+  Serial.println(F("Starting Full Logger Test"));
   FullLoggerTest();
+  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
+  Serial.println(F("Re-running Full Logger Test"));
+  FullLoggerTest();
+  Serial.println(F("Closing"));
   ramIs(TESTMETRICS::ram[TESTMETRICS::END_IDLE]);
 }
 
