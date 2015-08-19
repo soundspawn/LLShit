@@ -4,8 +4,8 @@
 //#define TESTBOARD_UNO
 
 #include "Arduino.h"
-#include <Spawwn.h>
-#include <Spawwn_std.h>
+#include <SpawwnCore.h>
+#include <SpawwnStd.h>
 #include <LLShitCore.h>
 
 namespace TESTMETRICS {
@@ -35,7 +35,7 @@ namespace TESTMETRICS {
 
 bool ramIsWorker(unsigned int testValue,unsigned long linenum){
   bool ramMatch;
-  unsigned int freeRamInt = freeRam();
+  unsigned int freeRamInt = freeUnfragRam();
   ramMatch = (freeRamInt == testValue);
   if(ramMatch){
     Serialprint("Line Number %lu: Ram match @ %u\n",linenum,testValue);
@@ -65,6 +65,7 @@ void setup() {
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
   Serial.println(F("Re-running BaseLogger Test"));
   BaseLoggerTest();
+  Serial.println(F("Closing"));
   ramIs(TESTMETRICS::ram[TESTMETRICS::END_IDLE]);
 }
 

@@ -5,9 +5,9 @@
 #include <SD.h>
 #include <SPI.h>
 #include <Ethernet.h>
-#include <Spawwn.h>
-#include <Spawwn_std.h>
-#include <Spawwn_net.h>
+#include <SpawwnCore.h>
+#include <SpawwnStd.h>
+#include <SpawwnNet.h>
 #include <LLShitCore.h>
 #include <LLShitFull.h>
 
@@ -23,12 +23,12 @@ namespace TESTMETRICS {
   };
   #if defined(TESTBOARD_MEGA)
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {
-      7292,
-      7287,
-      7283,
-      7287,
-      7279,
-      7295,
+      7274,
+      7269,
+      7265,
+      7265,
+      7261,
+      7277,
       0
     };
   #elif defined(TESTBOARD_UNO)
@@ -42,7 +42,7 @@ namespace TESTMETRICS {
 
 bool ramIsWorker(unsigned int testValue,unsigned long linenum){
   bool ramMatch;
-  unsigned int freeRamInt = freeRam();
+  unsigned int freeRamInt = freeUnfragRam();
   ramMatch = (freeRamInt == testValue);
   if(ramMatch){
     Serialprint("Line Number %lu: Ram match @ %u\n",linenum,testValue);
@@ -62,12 +62,32 @@ void BaseLoggerTest(){
   delete(lls);
 }
 
+void FullLoggerStringTest(LLSLogger &lls){
+  String stringTest;
+  stringTest.reserve(20);
+  stringTest = F("Testing Strings");
+  lls.writeEvent(stringTest);
+}
+
 void FullLoggerTest(){
-  LLSLogger *lls;
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_BEGIN]);
-  lls = new LLSLogger();
+  LLSLogger lls = LLSLogger();
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]);
-  delete(lls);
+
+  // Create a ramless event via char*, normally we'd just use Flash Mem directly
+  char* event = new char[20];
+  strcpy_P(event,PSTR("Testing Char*"));
+  lls.writeEvent(event);
+  delete(event);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]);
+  
+  //Use Flash Mem to post an event
+  lls.writeEvent(F("Testing Flash"));
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]);
+  
+  //Use a String (in closure because fuck strings)
+  FullLoggerStringTest(lls);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]);
 }
 
 void setup() {
@@ -83,6 +103,7 @@ void setup() {
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
   Serial.println(F("Re-running Full Logger Test"));
   FullLoggerTest();
+  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
   Serial.println(F("Closing"));
   ramIs(TESTMETRICS::ram[TESTMETRICS::END_IDLE]);
 }
