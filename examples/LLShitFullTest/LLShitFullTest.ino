@@ -1,6 +1,3 @@
-#define TESTBOARD_MEGA
-//#define TESTBOARD_UNO
-
 #include "Arduino.h"
 #include <SD.h>
 #include <SPI.h>
@@ -21,7 +18,7 @@ namespace TESTMETRICS {
     END_IDLE,
     NUM_RAM_VALUES
   };
-  #if defined(TESTBOARD_MEGA)
+  #if defined(__AVR_ATmega2560__)
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {
       7274,
       7269,
@@ -31,7 +28,7 @@ namespace TESTMETRICS {
       7277,
       0
     };
-  #elif defined(TESTBOARD_UNO)
+  #elif defined(__AVR_ATmega328P__)
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {
       0
   };
