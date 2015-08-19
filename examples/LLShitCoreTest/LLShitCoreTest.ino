@@ -33,9 +33,9 @@ namespace TESTMETRICS {
   #endif
 }
 
-bool ramIsWorker(unsigned int testValue,unsigned long linenum){
+bool ramIsWorker(unsigned int testValue,unsigned int objSize, unsigned long linenum){
   bool ramMatch;
-  unsigned int freeRamInt = freeUnfragRam();
+  unsigned int freeRamInt = freeUnfragRam() + objSize;
   ramMatch = (freeRamInt == testValue);
   if(ramMatch){
     Serialprint("Line Number %lu: Ram match @ %u\n",linenum,testValue);
@@ -45,13 +45,13 @@ bool ramIsWorker(unsigned int testValue,unsigned long linenum){
     return false;
   }
 }
-#define ramIs(target) ramIsWorker(target,__LINE__)
+#define ramIs(target,obj) ramIsWorker(target,sizeof(obj),__LINE__)
 
 void BaseLoggerTest(){
   ShitLoggerBase *lls;
-  ramIs(TESTMETRICS::ram[TESTMETRICS::BASE_LOGGER_BEGIN]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::BASE_LOGGER_BEGIN],lls);
   lls = new ShitLoggerBase();
-  ramIs(TESTMETRICS::ram[TESTMETRICS::BASE_LOGGER_INSTANCE_MADE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::BASE_LOGGER_INSTANCE_MADE],lls);
   delete(lls);
 }
 
@@ -59,14 +59,14 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   
-  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
   Serial.println(F("Starting BaseLogger Test"));
   BaseLoggerTest();
-  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
   Serial.println(F("Re-running BaseLogger Test"));
   BaseLoggerTest();
   Serial.println(F("Closing"));
-  ramIs(TESTMETRICS::ram[TESTMETRICS::END_IDLE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::END_IDLE],NULL);
 }
 
 void loop() {

@@ -40,9 +40,16 @@ namespace TESTMETRICS {
   #endif
 }
 
-bool ramIsWorker(unsigned int testValue,unsigned long linenum){
+void loggerObjectSize(unsigned int objSize){
+  Serial.print(F("Logger Object Size: "));
+  Serial.print(objSize);
+  Serial.println(F(" bytes"));
+}
+#define loggerSize(obj) loggerObjectSize(sizeof(obj))
+
+bool ramIsWorker(unsigned int testValue,unsigned int objSize, unsigned long linenum){
   bool ramMatch;
-  unsigned int freeRamInt = freeUnfragRam();
+  unsigned int freeRamInt = freeRam() + objSize;
   ramMatch = (freeRamInt == testValue);
   if(ramMatch){
     Serialprint("Line Number %lu: Ram match @ %u\n",linenum,testValue);
@@ -52,13 +59,13 @@ bool ramIsWorker(unsigned int testValue,unsigned long linenum){
     return false;
   }
 }
-#define ramIs(target) ramIsWorker(target,__LINE__)
+#define ramIs(target,obj) ramIsWorker(target,sizeof(obj),__LINE__)
 
 void BaseLoggerTest(){
   ShitLoggerBase *lls;
-  ramIs(TESTMETRICS::ram[TESTMETRICS::BASE_LOGGER_BEGIN]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::BASE_LOGGER_BEGIN],lls);
   lls = new ShitLoggerBase();
-  ramIs(TESTMETRICS::ram[TESTMETRICS::BASE_LOGGER_INSTANCE_MADE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::BASE_LOGGER_INSTANCE_MADE],lls);
   delete(lls);
 }
 
@@ -70,42 +77,51 @@ void FullLoggerStringTest(LLSLogger &lls){
 }
 
 void FullLoggerTest(){
-  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_BEGIN]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_BEGIN],NULL);
   LLSLogger lls = LLSLogger();
-  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
 
   // Create a ramless event via char*, normally we'd just use Flash Mem directly
   char* event = new char[20];
   strcpy_P(event,PSTR("Testing Char*"));
   lls.writeEvent(event);
   delete(event);
-  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]);
-  
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
+
   //Use Flash Mem to post an event
   lls.writeEvent(F("Testing Flash"));
-  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]);
-  
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
+
   //Use a String (in closure because fuck strings)
   FullLoggerStringTest(lls);
-  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
+
+  //Set the log Path
+  char* logPath = new char[20];
+  strcpy_P(logPath,PSTR("logs/"));
+  lls.setLogPath(logPath);
+  delete(logPath);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]-4,lls);
+  loggerSize(lls);
+  FullLoggerStringTest(lls);
 }
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  
-  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
+
+  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
   Serial.println(F("Starting BaseLogger Test"));
   BaseLoggerTest();
-  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
   Serial.println(F("Starting Full Logger Test"));
   FullLoggerTest();
-  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
   Serial.println(F("Re-running Full Logger Test"));
   FullLoggerTest();
-  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
   Serial.println(F("Closing"));
-  ramIs(TESTMETRICS::ram[TESTMETRICS::END_IDLE]);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::END_IDLE],NULL);
 }
 
 void loop() {
