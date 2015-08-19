@@ -57,6 +57,13 @@ char* LLSLogger::getFullCurrentLog(char* ret){
     return ret;
 }
 
+bool LLSLogger::setLogPath(const char* newLogPath){
+    this->logPath = (char*)realloc(this->logPath,strlen(newLogPath)+1*sizeof(char));
+    strcpy(this->logPath,newLogPath);
+
+    return true;
+}
+
 bool LLSLogger::writeEvent(String event){
     //Convert to char*
     char eventChar[event.length()+1];

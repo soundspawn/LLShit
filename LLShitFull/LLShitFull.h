@@ -10,6 +10,7 @@ class LLSLogger:
         bool writeEvent(const char*);
         bool writeEvent(String);
         bool writeEvent(const __FlashStringHelper*);
+        bool setLogPath(const char*);
         char* getFullCurrentLog(char*);
         
     protected:

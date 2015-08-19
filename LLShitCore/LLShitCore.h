@@ -15,7 +15,6 @@ class ShitLoggerBase {
         bool setLogMessagesToMemorize(byte);
         bool setLogPath(const char*);
         bool setMassiveBufferSize(unsigned int);
-        bool setConfigFile(const char*);
         bool deleteUpcomingLog();
         bool setFakeRTC(int);
 };

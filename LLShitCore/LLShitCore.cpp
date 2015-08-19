@@ -18,6 +18,5 @@ bool ShitLoggerBase::setLoggingParadigm(byte mode){return false;}
 bool ShitLoggerBase::setLogMessagesToMemorize(byte numMessages){return false;}
 bool ShitLoggerBase::setLogPath(const char* path){return false;}
 bool ShitLoggerBase::setMassiveBufferSize(unsigned int bufferSize){return false;}
-bool ShitLoggerBase::setConfigFile(const char* fileName){return false;}
 bool ShitLoggerBase::deleteUpcomingLog(){return false;}
 bool ShitLoggerBase::setFakeRTC(int timestamp){return false;}
