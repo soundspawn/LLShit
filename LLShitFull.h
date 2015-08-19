@@ -7,7 +7,9 @@ class LLSLogger:
     public:
         LLSLogger();
         ~LLSLogger();
-        bool writeEvent(char*);
+        bool writeEvent(const char*);
+        bool writeEvent(String);
+        bool writeEvent(const __FlashStringHelper*);
         char* getFullCurrentLog(char*);
         
     protected:

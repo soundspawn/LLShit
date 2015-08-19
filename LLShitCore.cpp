@@ -7,7 +7,7 @@
 #include "LLShitCore.h"
 
 bool ShitLoggerBase::writeEvent(const __FlashStringHelper* event){return false;}
-bool ShitLoggerBase::writeEvent(char* event){return false;}
+bool ShitLoggerBase::writeEvent(const char* event){return false;}
 bool ShitLoggerBase::writeEvent(String event){return false;}
 bool ShitLoggerBase::getLogName(char* ret,unsigned int logsBack){return false;}
 bool ShitLoggerBase::getLogName(char* ret){return this->getLogName(ret,0);}

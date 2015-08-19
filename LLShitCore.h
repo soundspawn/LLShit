@@ -4,7 +4,7 @@
 class ShitLoggerBase {
 	public:
         bool writeEvent(const __FlashStringHelper*);
-        bool writeEvent(char*);
+        bool writeEvent(const char*);
         bool writeEvent(String);
         bool getLogName(char*,unsigned int);
         bool getLogName(char*);
