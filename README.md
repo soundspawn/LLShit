@@ -19,16 +19,16 @@ void setup(){
     LLSLogger lls = LLSLogger();
 
     lls.writeEvent("Hello Logger World!"); //You should never do this, eats sram
-    lls.writeEvent(F("I'm better behaved")); //This eats flash which is fine
+    lls.writeEvent(F("I'm better behaved")); //This eats flash which is the best variable free option
 
     char message[20];
     uint8_t number = 8;
-    sprintf_P(message,PSTR("This is also okay to do %u"),number);
-    lls.writeEvent(message);
+    sprintf_P(message,PSTR("This is also okay to do %u"),number); //Do this to store the format in flash
+    lls.writeEvent(message); //Good with char[] / char*
 
     String stringsAreBadAndYouShouldFeelBadUsingThem;
     stringsAreBadAndYouShouldFeelBadUsingThem = "The logger is still kind even with bad things";
-    lls.writeEvent(stringsAreBadAndYouShouldFeelBadUsingThem);
+    lls.writeEvent(stringsAreBadAndYouShouldFeelBadUsingThem); //Even allows strings
 }
 ```
 
