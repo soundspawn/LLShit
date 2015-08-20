@@ -8,6 +8,9 @@
 #include <LLShitCore.h>
 #include <LLShitFull.h>
 
+#define SDCARD_PIN 4
+#define SDCARD_SUPPORT_PIN 10
+
 namespace TESTMETRICS {
   enum{
     START_IDLE,
@@ -18,14 +21,26 @@ namespace TESTMETRICS {
     END_IDLE,
     NUM_RAM_VALUES
   };
+
+  enum{
+    LOG_0_FILE,
+    STRING_TABLE_ENUM_COUNT
+  };
+  const char LOG_0_FILE_STRING[] PROGMEM = "0.log";
+  const char DUMMY_STRING[] PROGMEM = "";
+  PGM_P const STRING_TABLE[] PROGMEM = {
+    LOG_0_FILE_STRING,
+    DUMMY_STRING
+  };
+
   #if defined(__AVR_ATmega2560__)
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {
-      7274,
-      7269,
-      7265,
-      7265,
-      7261,
-      7277,
+      7273,
+      7268,
+      7264,
+      7264,
+      7260,
+      7276,
       0
     };
   #elif defined(__AVR_ATmega328P__)
@@ -83,6 +98,8 @@ void FullLoggerTest(){
   strcpy_P(event,PSTR("Testing Char*"));
   lls.writeEvent(event);
   delete(event);
+  loggerSize(lls);
+  loggerSize(lls);
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
 
   //Use Flash Mem to post an event
@@ -98,14 +115,52 @@ void FullLoggerTest(){
   strcpy_P(logPath,PSTR("logs/"));
   lls.setLogPath(logPath);
   delete(logPath);
-  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]-4,lls);
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]-4,lls);//subtract size difference of logPath - "" to "logs/"
   loggerSize(lls);
   FullLoggerStringTest(lls);
+}
+
+void deleteTestLogs(){
+  char buffer[13];
+  strcpy_P(buffer,(PGM_P)pgm_read_word(&(TESTMETRICS::STRING_TABLE[TESTMETRICS::LOG_0_FILE])));
+  SD.remove(buffer);
+}
+
+void dumpLog(const char* logName){
+  Serial.print(logName);
+  Serial.println(F(" Log Contents:"));
+  Serial.println(F("---------------------------------------"));
+  File fileHandle;
+  fileHandle = SD.open(logName);
+  if(fileHandle){
+    while(fileHandle.available()){
+      Serial.write(fileHandle.read());
+    }
+    fileHandle.close();
+  }else{
+    Serial.println(F("Error Opening File"));
+  }
+  Serial.println(F("---------------------------------------"));
+}
+
+void checkLogs(){
+  char* logName = new char[13];
+  strcpy_P(logName,(PGM_P)pgm_read_word(&(TESTMETRICS::STRING_TABLE[TESTMETRICS::LOG_0_FILE])));
+  dumpLog(logName);
+  delete(logName);
 }
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  while(!Serial){;}
+  pinMode(SDCARD_SUPPORT_PIN,OUTPUT);
+  digitalWrite(SDCARD_SUPPORT_PIN, HIGH);
+  if(!SD.begin(SDCARD_PIN)){
+    Serial.println(F("**** sd init failed ****\n"));
+  }else{
+    deleteTestLogs();
+  }
 
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
   Serial.println(F("Starting BaseLogger Test"));
@@ -117,6 +172,9 @@ void setup() {
   Serial.println(F("Re-running Full Logger Test"));
   FullLoggerTest();
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
+
+  checkLogs();
+
   Serial.println(F("Closing"));
   ramIs(TESTMETRICS::ram[TESTMETRICS::END_IDLE],NULL);
 }
