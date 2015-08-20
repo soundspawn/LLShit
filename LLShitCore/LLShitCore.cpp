@@ -9,8 +9,8 @@
 bool ShitLoggerBase::writeEvent(const __FlashStringHelper* event){return false;}
 bool ShitLoggerBase::writeEvent(const char* event){return false;}
 bool ShitLoggerBase::writeEvent(String event){return false;}
-bool ShitLoggerBase::getLogName(char* ret,unsigned int logsBack){return false;}
-bool ShitLoggerBase::getLogName(char* ret){return this->getLogName(ret,0);}
+char* ShitLoggerBase::getLogName(char* ret,unsigned int logsBack){return false;}
+char* ShitLoggerBase::getLogName(char* ret){return this->getLogName(ret,0);}
 bool ShitLoggerBase::getFullCurrentLog(){return false;}
 bool ShitLoggerBase::getRecentEventArray(byte numEvents){return false;}
 bool ShitLoggerBase::setAverageMessageLength(unsigned int len){return false;}
