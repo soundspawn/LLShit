@@ -2,7 +2,7 @@
 #define LLSHITCORELIB_H
 
 class ShitLoggerBase {
-	public:
+    public:
         bool writeEvent(const __FlashStringHelper*);
         bool writeEvent(const char*);
         bool writeEvent(String);
@@ -15,7 +15,10 @@ class ShitLoggerBase {
         bool setLogPath(const char*);
         bool setMassiveBufferSize(unsigned int);
         bool deleteUpcomingLog();
-        bool setFakeRTC(int);
+        bool setFakeRTC(uint16_t);
+        bool detectMillisRollover(uint16_t);
+        bool detectMillisRollover();
+        uint32_t getEventTimestamp();
 };
 
 #endif

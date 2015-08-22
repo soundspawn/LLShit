@@ -18,4 +18,7 @@ bool ShitLoggerBase::setLogMessagesToMemorize(byte numMessages){return false;}
 bool ShitLoggerBase::setLogPath(const char* path){return false;}
 bool ShitLoggerBase::setMassiveBufferSize(unsigned int bufferSize){return false;}
 bool ShitLoggerBase::deleteUpcomingLog(){return false;}
-bool ShitLoggerBase::setFakeRTC(int timestamp){return false;}
+bool ShitLoggerBase::setFakeRTC(uint16_t timestamp){return false;}
+bool ShitLoggerBase::detectMillisRollover(uint16_t mills){return false;}
+bool ShitLoggerBase::detectMillisRollover(){uint16_t mills = millis();return this->detectMillisRollover(mills);}
+uint32_t ShitLoggerBase::getEventTimestamp(){return false;}
