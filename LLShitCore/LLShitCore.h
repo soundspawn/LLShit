@@ -11,7 +11,6 @@ class ShitLoggerBase {
         bool getFullCurrentLog();
         bool getRecentEventArray(byte);
         bool setAverageMessageLength(unsigned int);
-        bool setLoggingParadigm(byte);
         bool setLogMessagesToMemorize(byte);
         bool setLogPath(const char*);
         bool setMassiveBufferSize(unsigned int);

@@ -14,7 +14,6 @@ char* ShitLoggerBase::getLogName(char* ret){return this->getLogName(ret,0);}
 bool ShitLoggerBase::getFullCurrentLog(){return false;}
 bool ShitLoggerBase::getRecentEventArray(byte numEvents){return false;}
 bool ShitLoggerBase::setAverageMessageLength(unsigned int len){return false;}
-bool ShitLoggerBase::setLoggingParadigm(byte mode){return false;}
 bool ShitLoggerBase::setLogMessagesToMemorize(byte numMessages){return false;}
 bool ShitLoggerBase::setLogPath(const char* path){return false;}
 bool ShitLoggerBase::setMassiveBufferSize(unsigned int bufferSize){return false;}
