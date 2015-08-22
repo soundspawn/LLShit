@@ -35,12 +35,12 @@ namespace TESTMETRICS {
 
   #if defined(__AVR_ATmega2560__)
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {
-      7273,
-      7268,
-      7264,
+      7269,
       7264,
       7260,
-      7276,
+      7252,
+      7256,
+      7272,
       0
     };
   #elif defined(__AVR_ATmega328P__)
@@ -92,6 +92,7 @@ void FullLoggerStringTest(LLSLogger &lls){
 void FullLoggerTest(){
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_BEGIN],NULL);
   LLSLogger lls = LLSLogger();
+  lls.setFakeRTC(1440261234);
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
 
   // Create a ramless event via char*, normally we'd just use Flash Mem directly
@@ -99,7 +100,6 @@ void FullLoggerTest(){
   strcpy_P(event,PSTR("Testing Char*"));
   lls.writeEvent(event);
   delete(event);
-  loggerSize(lls);
   loggerSize(lls);
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
 
