@@ -71,7 +71,8 @@ bool ramIsWorker(unsigned int testValue,unsigned int objSize, unsigned long line
     return false;
   }
 }
-#define ramIs(target,obj) ramIsWorker(target,sizeof(obj),__LINE__)
+#define RAMMOD -18
+#define ramIs(target,obj) ramIsWorker(target+RAMMOD,sizeof(obj),__LINE__)
 
 void BaseLoggerTest(){
   ShitLoggerBase *lls;
