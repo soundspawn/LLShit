@@ -101,11 +101,10 @@ bool LLSLogger::writeEvent(const char* event){
     char* logFile;
     File fileHandle;
     char timestampFormat[5];
-    char timestamp[33];
+    char timestamp[11];
 
     logFile = this->getFullCurrentLog(logFile);
-    strcpy_P(timestampFormat,PSTR("%lu"));
-    sprintf(timestamp,timestampFormat,millis());
+    sprintf(timestamp,"%lu",this->getEventTimestamp());
 
     char format[strlen(LLSHITFULL_STRING::WRITE_EVENT_FORMAT_STRING)+1];
     strcpy_P(format,(PGM_P)pgm_read_word(&(LLSHITFULL_STRING::LLSHITFULL_STRING_TABLE[LLSHITFULL_STRING::WRITE_EVENT_FORMAT])));
@@ -125,4 +124,44 @@ bool LLSLogger::writeEvent(const char* event){
 
     delete(logFile);
     return true;
+}
+
+/**
+  * timestamp should be the current time in epoch format (seconds since 1970)
+  * This saves the unix time as of our programs beginning.  We can add millis
+  * to this timestamp to get to the actual time
+  * If this is run past the ~59 days so millis() has rolled over, things will be off
+  */
+bool LLSLogger::setFakeRTC(uint32_t timestamp){
+    //Store the latest millis (used for rollovers)
+    this->lastMillisLogged = millis();
+    //We'll use seconds though to comply with epoch format
+    uint32_t runtime = this->lastMillisLogged / 1000;
+    //Save the offset, ignoring the current run time
+    this->timeSync = timestamp - runtime;
+}
+
+/**
+  * We are attempting to see when millis overflows and adjust our timeSync accordingly
+  */
+bool LLSLogger::detectMillisRollover(uint32_t mills){
+    //millis() has rolled over, add
+    if(this->lastMillisLogged > mills){
+        this->timeSync += (uint32_t)-1 / 1000;
+    }
+    this->lastMillisLogged = mills;
+    return true;
+}
+
+bool LLSLogger::detectMillisRollover(){
+    uint32_t tmp = millis();
+    return detectMillisRollover(tmp);
+}
+
+uint32_t LLSLogger::getEventTimestamp(){
+    //Get current millis
+    uint32_t mills = millis();
+    //Detect rollover,
+    this->detectMillisRollover(mills);
+    return this->timeSync + (mills / 1000);
 }
