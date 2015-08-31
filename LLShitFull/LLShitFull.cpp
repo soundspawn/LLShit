@@ -260,12 +260,12 @@ uint32_t LLSLogger::getEventTimestamp(){
   * This is not strictly required but optimizes the number of log scans needed
   *     to retrieve the desired number of messages
   */
-bool setAverageMessageLength(uint16_t avgLength){
+bool LLSLogger::setAverageMessageLength(uint16_t avgLength){
     this->avgMessageLength = avgLength;
     return true;
 }
 
-bool getRecentEventArray(uint8_t count){
+bool LLSLogger::getRecentEventArray(uint8_t count){
     //Open current file
     //Calculate estimated length of (count) messages - avgMessageLength*count
     //If file size is less than calc'd value, seek to beginning of log
