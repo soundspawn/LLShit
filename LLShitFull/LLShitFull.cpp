@@ -49,7 +49,7 @@ uint8_t LLSLogger::getLogNumberOnly(){
     uint8_t curDay = max(1,day());
     if(curDay != this->lastLogDay){
         this->lastLogDay = curDay;
-        this->freshBoot = 1;
+        this->newLog = 1;
     }
     return curDay;
 }
@@ -171,7 +171,7 @@ bool LLSLogger::writeEvent(const char* event){
     sprintf_P(timestamp,PSTR("%lu"),this->getEventTimestamp());
 
     //First log message to new file (first boot or date change)
-    if(this->freshBoot){
+    if(this->newLog){
         //Clear out future logs
         char incrementString[13];
         uint8_t logNum = this->getLogNumberOnly();
@@ -190,7 +190,7 @@ bool LLSLogger::writeEvent(const char* event){
         }
         sprintf_P(incrementString,PSTR("%u.LOG"),logNum);
         this->ClearAllLogsByWilcard(this->logPath,incrementString);
-        this->freshBoot = 0;
+        this->newLog = 0;
     }
 
     char format[strlen(LLSHITFULL_STRING::WRITE_EVENT_FORMAT_STRING)+1];

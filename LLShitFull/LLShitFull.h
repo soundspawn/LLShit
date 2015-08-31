@@ -30,7 +30,7 @@ class LLSLogger:
         char *logPath;
         uint32_t timeSync = 0;
         uint32_t lastMillisLogged = 0;
-        uint8_t freshBoot = 1;
+        uint8_t newLog = 1;
         uint8_t lastLogDay = 0;
         uint16_t avgMessageLength = 50;
 };
