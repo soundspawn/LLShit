@@ -15,7 +15,7 @@ class ShitLoggerBase {
         bool setLogPath(const char*);
         bool setMassiveBufferSize(unsigned int);
         bool deleteUpcomingLog();
-        bool setFakeRTC(uint16_t);
+        bool setRTC(uint16_t);
         bool detectMillisRollover(uint16_t);
         bool detectMillisRollover();
         uint32_t getEventTimestamp();

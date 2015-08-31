@@ -4,9 +4,10 @@
 #include "WProgram.h"
 #endif
 
+#include <SD.h>
+#include <Time.h>
 #include "LLShitCore.h"
 #include "LLShitFull.h"
-#include <SD.h>
 
 #define DEBUG
 
@@ -132,7 +133,9 @@ bool LLSLogger::writeEvent(const char* event){
   * to this timestamp to get to the actual time
   * If this is run past the ~59 days so millis() has rolled over, things will be off
   */
-bool LLSLogger::setFakeRTC(uint32_t timestamp){
+bool LLSLogger::setRTC(uint32_t timestamp){
+    //Set the current timestamp
+    setTime(timestamp);
     //Store the latest millis (used for rollovers)
     this->lastMillisLogged = millis();
     //We'll use seconds though to comply with epoch format

@@ -92,7 +92,6 @@ void FullLoggerStringTest(LLSLogger &lls){
 void FullLoggerTest(){
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_BEGIN],NULL);
   LLSLogger lls = LLSLogger();
-  lls.setFakeRTC(1440261234);
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
 
   // Create a ramless event via char*, normally we'd just use Flash Mem directly
