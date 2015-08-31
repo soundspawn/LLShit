@@ -12,12 +12,14 @@ class LLSLogger:
         bool writeEvent(const __FlashStringHelper*);
         bool setLogPath(const char*);
         char* getFullCurrentLog(char*);
-        char* getLogName(char*,unsigned int);
+        char* getLogName(char*,uint16_t);
         char* getLogName(char*);
         bool setRTC(uint32_t);
         bool detectMillisRollover(uint32_t);
         bool detectMillisRollover();
         uint32_t getEventTimestamp();
+        bool getRecentEventArray(uint8_t);
+        bool setAverageMessageLength(uint16_t);
 
     private:
         void ClearAllLogsByWilcard(const char*,const char*);
@@ -30,6 +32,7 @@ class LLSLogger:
         uint32_t lastMillisLogged = 0;
         uint8_t freshBoot = 1;
         uint8_t lastLogDay = 0;
+        uint16_t avgMessageLength = 50;
 };
 
 #endif

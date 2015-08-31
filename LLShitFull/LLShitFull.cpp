@@ -54,7 +54,7 @@ uint8_t LLSLogger::getLogNumberOnly(){
     return curDay;
 }
 
-char* LLSLogger::getLogName(char* logName, unsigned int logsBack){
+char* LLSLogger::getLogName(char* logName, uint16_t logsBack){
     //Ignore logsBack for now
 
     //Ensure char array is of suitable size
@@ -67,7 +67,7 @@ char* LLSLogger::getLogName(char* logName, unsigned int logsBack){
 char* LLSLogger::getLogName(char* ret){return this->getLogName(ret,0);}
 
 char* LLSLogger::getFullCurrentLog(char* ret){
-    byte nameLength;
+    uint8_t nameLength;
     char* logName;
     logName = this->getLogName(logName);
 
@@ -253,4 +253,36 @@ uint32_t LLSLogger::getEventTimestamp(){
     //Detect rollover,
     this->detectMillisRollover(mills);
     return this->timeSync + (mills / 1000);
+}
+
+/**
+  * Sets the loggers expectation of message length
+  * This is not strictly required but optimizes the number of log scans needed
+  *     to retrieve the desired number of messages
+  */
+bool setAverageMessageLength(uint16_t avgLength){
+    this->avgMessageLength = avgLength;
+    return true;
+}
+
+bool getRecentEventArray(uint8_t count){
+    //Open current file
+    //Calculate estimated length of (count) messages - avgMessageLength*count
+    //If file size is less than calc'd value, seek to beginning of log
+    //  Else seek to (log_length - calc) skipping the first portion of the file
+    //Save this seek to byte offset (byteStart)
+    //Call a combing function - read bytes in to string buffers (char*?) splitting at newline
+    //  Function needs to receive the endOfFileRead byte offset.  Either EOF or when re-calling
+    //      this function the point we started last time
+    //  If seeked to beginning - save first message (byte 0 to first newline)
+    //      Else skip first message (assume we were midway in to the message)
+    //  Each newline decrease the remaining messages to comb (decrease count?)
+    //  Return on endOfFileRead - either EOF or hit a specified offset
+    //      If specified offset, go forward to EOF or next newline first (capture that partial message)
+    //  Return on EnoughMessagesCombed - make sure to keep reading to endOfFileRead and if there are more
+    //      messages, keep shifting off the oldest.  The goal is not to stop when enough are hit, but to
+    //      get the last X messages, so we have to make sure we don't stop short and get messages 1-10 of 11
+    //If EnoughMessagesCombed we're GTG
+    //If endOfFileRead then either go back another (calc'd bytes) or again if that's <0 for offset then BOF
+    //If last call was BOF, then repeat this process but for the previous log
 }
