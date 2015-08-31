@@ -14,7 +14,7 @@ class LLSLogger:
         char* getFullCurrentLog(char*);
         char* getLogName(char*,unsigned int);
         char* getLogName(char*);
-        bool setFakeRTC(uint32_t);
+        bool setRTC(uint32_t);
         bool detectMillisRollover(uint32_t);
         bool detectMillisRollover();
         uint32_t getEventTimestamp();
