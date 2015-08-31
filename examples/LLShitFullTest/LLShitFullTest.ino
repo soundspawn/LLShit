@@ -5,6 +5,7 @@
 #include <SpawwnCore.h>
 #include <SpawwnStd.h>
 #include <SpawwnNet.h>
+#include <Time.h>
 #include <LLShitCore.h>
 #include <LLShitFull.h>
 
@@ -14,8 +15,6 @@
 namespace TESTMETRICS {
   enum{
     START_IDLE,
-    BASE_LOGGER_BEGIN,
-    BASE_LOGGER_INSTANCE_MADE,
     FULL_LOGGER_BEGIN,
     FULL_LOGGER_INSTANCE_MADE,
     END_IDLE,
@@ -23,24 +22,25 @@ namespace TESTMETRICS {
   };
 
   enum{
-    LOG_0_FILE,
+    LOG_1_FILE,
+    LOG_22_FILE,
     STRING_TABLE_ENUM_COUNT
   };
-  const char LOG_0_FILE_STRING[] PROGMEM = "0.log";
+  const char LOG_1_FILE_STRING[] PROGMEM = "1.log";
+  const char LOG_22_FILE_STRING[] PROGMEM = "logs/22.log";
   const char DUMMY_STRING[] PROGMEM = "";
   PGM_P const STRING_TABLE[] PROGMEM = {
-    LOG_0_FILE_STRING,
+    LOG_1_FILE_STRING,
+    LOG_22_FILE_STRING,
     DUMMY_STRING
   };
 
   #if defined(__AVR_ATmega2560__)
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {
-      7269,
-      7264,
-      7260,
-      7252,
-      7256,
-      7272,
+      7230,
+      7211,
+      7217,
+      7233,
       0
     };
   #elif defined(__AVR_ATmega328P__)
@@ -71,16 +71,8 @@ bool ramIsWorker(unsigned int testValue,unsigned int objSize, unsigned long line
     return false;
   }
 }
-#define RAMMOD -18
+#define RAMMOD 0
 #define ramIs(target,obj) ramIsWorker(target+RAMMOD,sizeof(obj),__LINE__)
-
-void BaseLoggerTest(){
-  ShitLoggerBase *lls;
-  ramIs(TESTMETRICS::ram[TESTMETRICS::BASE_LOGGER_BEGIN],lls);
-  lls = new ShitLoggerBase();
-  ramIs(TESTMETRICS::ram[TESTMETRICS::BASE_LOGGER_INSTANCE_MADE],lls);
-  delete(lls);
-}
 
 void FullLoggerStringTest(LLSLogger &lls){
   String stringTest;
@@ -115,15 +107,22 @@ void FullLoggerTest(){
   strcpy_P(logPath,PSTR("logs/"));
   lls.setLogPath(logPath);
   delete(logPath);
+  lls.setRTC(1440261234);
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]-4,lls);//subtract size difference of logPath - "" to "logs/"
   loggerSize(lls);
   FullLoggerStringTest(lls);
+  //Force the RTC off in case we want to retest the lls object
+  lls.setRTC(0);
 }
 
 void deleteTestLogs(){
   char buffer[13];
-  strcpy_P(buffer,(PGM_P)pgm_read_word(&(TESTMETRICS::STRING_TABLE[TESTMETRICS::LOG_0_FILE])));
+  strcpy_P(buffer,(PGM_P)pgm_read_word(&(TESTMETRICS::STRING_TABLE[TESTMETRICS::LOG_1_FILE])));
   SD.remove(buffer);
+  strcpy_P(buffer,(PGM_P)pgm_read_word(&(TESTMETRICS::STRING_TABLE[TESTMETRICS::LOG_22_FILE])));
+  SD.remove(buffer);
+  strcpy_P(buffer,PSTR("logs"));
+  SD.rmdir(buffer);
 }
 
 void dumpLog(const char* logName){
@@ -145,7 +144,9 @@ void dumpLog(const char* logName){
 
 void checkLogs(){
   char* logName = new char[13];
-  strcpy_P(logName,(PGM_P)pgm_read_word(&(TESTMETRICS::STRING_TABLE[TESTMETRICS::LOG_0_FILE])));
+  strcpy_P(logName,(PGM_P)pgm_read_word(&(TESTMETRICS::STRING_TABLE[TESTMETRICS::LOG_1_FILE])));
+  dumpLog(logName);
+  strcpy_P(logName,(PGM_P)pgm_read_word(&(TESTMETRICS::STRING_TABLE[TESTMETRICS::LOG_22_FILE])));
   dumpLog(logName);
   delete(logName);
 }
@@ -162,9 +163,6 @@ void setup() {
     deleteTestLogs();
   }
 
-  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
-  Serial.println(F("Starting BaseLogger Test"));
-  BaseLoggerTest();
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
   Serial.println(F("Starting Full Logger Test"));
   FullLoggerTest();

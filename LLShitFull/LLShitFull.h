@@ -19,10 +19,17 @@ class LLSLogger:
         bool detectMillisRollover();
         uint32_t getEventTimestamp();
 
+    private:
+        void ClearAllLogsByWilcard(const char*,const char*);
+        int wildcmp(const char*, const char*);
+        uint8_t getLogNumberOnly();
+
     protected:
-        char* logPath;
+        char *logPath;
         uint32_t timeSync = 0;
         uint32_t lastMillisLogged = 0;
+        uint8_t freshBoot = 1;
+        uint8_t lastLogDay = 0;
 };
 
 #endif

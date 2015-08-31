@@ -45,14 +45,22 @@ LLSLogger::~LLSLogger(){
     delete(this->logPath);
 }
 
+uint8_t LLSLogger::getLogNumberOnly(){
+    uint8_t curDay = max(1,day());
+    if(curDay != this->lastLogDay){
+        this->lastLogDay = curDay;
+        this->freshBoot = 1;
+    }
+    return curDay;
+}
+
 char* LLSLogger::getLogName(char* logName, unsigned int logsBack){
     //Ignore logsBack for now
 
     //Ensure char array is of suitable size
     logName = (char*)realloc(logName,sizeof(char)*13);//12345678.123\n
 
-    //Hardcode for now
-    strcpy_P(logName,PSTR("0.log"));
+    sprintf_P(logName,PSTR("%u.log"),this->getLogNumberOnly());
 
     return logName;
 }
@@ -80,8 +88,63 @@ char* LLSLogger::getFullCurrentLog(char* ret){
 bool LLSLogger::setLogPath(const char* newLogPath){
     this->logPath = (char*)realloc(this->logPath,strlen(newLogPath)+1*sizeof(char));
     strcpy(this->logPath,newLogPath);
+    SD.mkdir(this->logPath);
 
     return true;
+}
+
+int LLSLogger::wildcmp(const char *wild, const char *string){
+    const char *cp = NULL, *mp = NULL;
+
+    while((*string) && (*wild != '*')){
+        if((*wild != *string) && (*wild != '?')){
+            return 0;
+        }
+        wild++;
+        string++;
+    }
+
+    while(*string){
+        if(*wild == '*'){
+            if(!*++wild){
+                return 1;
+            }
+            mp = wild;
+            cp = string+1;
+        }else if((*wild == *string) || (*wild == '?')){
+            wild++;
+            string++;
+        }else{
+            wild = mp;
+            string = cp++;
+        }
+    }
+    while(*wild == '*'){
+        wild++;
+    }
+    return !*wild;
+}
+
+void LLSLogger::ClearAllLogsByWilcard(const char* root,const char* target){
+    File dir = SD.open(root);
+    char curFile[13];
+    char buffer[strlen(root)+14];
+
+    while(true){
+        File entry = dir.openNextFile();
+        if(!entry){
+            dir.close();
+            return;
+        }
+        if(!entry.isDirectory()){
+            strncpy(curFile,entry.name(),13);
+            if(this->wildcmp(target,curFile)){
+                sprintf_P(buffer,PSTR("%s%s"),root,curFile);
+                SD.remove(buffer);
+            }
+        }
+        entry.close();
+    }
 }
 
 bool LLSLogger::writeEvent(String event){
@@ -105,7 +168,30 @@ bool LLSLogger::writeEvent(const char* event){
     char timestamp[11];
 
     logFile = this->getFullCurrentLog(logFile);
-    sprintf(timestamp,"%lu",this->getEventTimestamp());
+    sprintf_P(timestamp,PSTR("%lu"),this->getEventTimestamp());
+
+    //First log message to new file (first boot or date change)
+    if(this->freshBoot){
+        //Clear out future logs
+        char incrementString[13];
+        uint8_t logNum = this->getLogNumberOnly();
+        //28th or beyond let's wipe through the 31st
+        if(logNum > 27){
+            //From "tomorrow" through the 31st
+            for(uint8_t i = logNum+1;i<=31;i++){
+                sprintf_P(incrementString,PSTR("%u.LOG"),i);
+                this->ClearAllLogsByWilcard(this->logPath,incrementString);
+            }
+            //Plan on clearing the 1st as well (this could be the last day of the month)
+            logNum = 1;
+        }else{
+            //The real "tomorrow"
+            logNum++;
+        }
+        sprintf_P(incrementString,PSTR("%u.LOG"),logNum);
+        this->ClearAllLogsByWilcard(this->logPath,incrementString);
+        this->freshBoot = 0;
+    }
 
     char format[strlen(LLSHITFULL_STRING::WRITE_EVENT_FORMAT_STRING)+1];
     strcpy_P(format,(PGM_P)pgm_read_word(&(LLSHITFULL_STRING::LLSHITFULL_STRING_TABLE[LLSHITFULL_STRING::WRITE_EVENT_FORMAT])));
