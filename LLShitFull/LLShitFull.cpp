@@ -57,9 +57,10 @@ LLSLogger::~LLSLogger(){
   *             no 28-31 then we know to return 0
   */
 uint8_t LLSLogger::getLogNumberOnly(uint8_t daysBack){
+    uint8_t curDay;
     //Ensure we never get a 0... somehow we do when the function runs
     //  early in execution (first couple ms)
-    uint8_t curDay = max(1,day());
+    curDay = max(1,day());
     //If we just want the standard "current log number"
     if(daysBack == 0){
         //Detect if this is a new log number relative to last logged event
@@ -69,6 +70,7 @@ uint8_t LLSLogger::getLogNumberOnly(uint8_t daysBack){
             this->newLog = 1;
         }
     }else{
+        char* buffer = new char;
         //We want a previous log, loop until we're back far enough
         while(daysBack > 0){
             //Go back one day
@@ -77,10 +79,17 @@ uint8_t LLSLogger::getLogNumberOnly(uint8_t daysBack){
             if(curDay == 0){
                 curDay = 31;
             }
-            //if(!SD.exists())
+            buffer = this->formatDateToFullLogName(buffer,curDay);
+            if(!SD.exists(buffer)){
+                if(curDay <= 28){
+                    //See "Feb" rule in function notes
+                    return 0;
+                }
+            }
             //Decrement
             daysBack--;
         }
+        delete(buffer);
     }
     //Return the day
     return curDay;
