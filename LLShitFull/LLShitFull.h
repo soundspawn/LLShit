@@ -13,7 +13,6 @@ class LLSLogger:
         bool setLogPath(const char*);
         char* getFullCurrentLog(char*);
         char* getLogName(char*,uint8_t);
-        char* getLogName(char*);
         bool setRTC(uint32_t);
         bool detectMillisRollover(uint32_t);
         bool detectMillisRollover();
@@ -26,6 +25,7 @@ class LLSLogger:
         int wildcmp(const char*, const char*);
         uint8_t getLogNumberOnly();
         uint8_t getLogNumberOnly(uint8_t);
+        char* formatDateToFullLogName(char*, uint8_t);
 
     protected:
         char *logPath;

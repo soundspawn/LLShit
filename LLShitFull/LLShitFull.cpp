@@ -77,7 +77,7 @@ uint8_t LLSLogger::getLogNumberOnly(uint8_t daysBack){
             if(curDay == 0){
                 curDay = 31;
             }
-            if(!SD.exists())
+            //if(!SD.exists())
             //Decrement
             daysBack--;
         }
@@ -85,36 +85,35 @@ uint8_t LLSLogger::getLogNumberOnly(uint8_t daysBack){
     //Return the day
     return curDay;
 }
-uint8_t LLSLogger::getLogNumberOnly(){
-    return this->getLogNumberOnly(0);
-}
+uint8_t LLSLogger::getLogNumberOnly(){return this->getLogNumberOnly(0);}
 
-char* LLSLogger::getLogName(char* logName, uint8_t logsBack){
+char* LLSLogger::getLogName(char* logName, uint8_t date){
     //Ensure char array is of suitable size
     logName = (char*)realloc(logName,sizeof(char)*13);//12345678.123\n
-
-    sprintf_P(logName,PSTR("%u.log"),this->getLogNumberOnly());
+    sprintf_P(logName,PSTR("%u.log"),date);
 
     return logName;
 }
-char* LLSLogger::getLogName(char* ret){return this->getLogName(ret,0);}
 
-char* LLSLogger::getFullCurrentLog(char* ret){
-    uint8_t nameLength;
+char* LLSLogger::formatDateToFullLogName(char* ret,uint8_t date){
     char* logName;
-    logName = this->getLogName(logName);
-
-    nameLength  = strlen(this->logPath);
-    nameLength += strlen(logName);
+    logName = this->getLogName(logName,date);
+    uint8_t nameLength;
+    nameLength  = strlen(this->logPath)+14;
 
     char format[strlen(LLSHITFULL_STRING::FULL_CURRENT_LOG_FORMAT_STRING)+1];
     strcpy_P(format, (PGM_P)pgm_read_word(&(LLSHITFULL_STRING::LLSHITFULL_STRING_TABLE[LLSHITFULL_STRING::FULL_CURRENT_LOG_FORMAT])));
     nameLength += strlen(format);
 
-    ret = new char[nameLength+1];
+    ret = (char*)realloc(ret,sizeof(char)*nameLength);
     sprintf(ret,format,this->logPath,logName);
 
     delete(logName);
+    return ret;
+}
+
+char* LLSLogger::getFullCurrentLog(char* ret){
+    ret = this->formatDateToFullLogName(ret,this->getLogNumberOnly());
     return ret;
 }
 
