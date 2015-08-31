@@ -123,6 +123,7 @@ void deleteTestLogs(){
   SD.remove(buffer);
   strcpy_P(buffer,PSTR("logs"));
   SD.rmdir(buffer);
+  SD.remove(buffer);
 }
 
 void dumpLog(const char* logName){
