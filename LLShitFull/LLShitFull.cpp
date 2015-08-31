@@ -327,7 +327,7 @@ LLSLoggerEventList* LLSLogger::logComber(LLSLoggerEventList* list, File& logFile
     return list;
 }
 
-LLSLoggerEventList* LLSLogger::getRecentEventArray(LLSLoggerEventList* list,uint8_t count){
+LLSLoggerEventList* LLSLogger::getRecentEventList(LLSLoggerEventList* list,uint8_t count){
     uint8_t daysBack = 0;
     uint8_t date;
     char* curLog;

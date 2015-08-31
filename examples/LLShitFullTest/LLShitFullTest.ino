@@ -114,7 +114,7 @@ void FullLoggerTest(){
 
   Serial.println(F("**** Printing last 10 event messages ****"));
   LLSLoggerEventList* list = NULL;
-  list = lls.getRecentEventArray(list,10);
+  list = lls.getRecentEventList(list,10);
   LLSLoggerEventList* node = list;
   while(node != NULL){
     Serial.println(node->message);

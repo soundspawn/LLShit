@@ -31,7 +31,7 @@ class LLSLogger:
         bool detectMillisRollover(uint32_t);
         bool detectMillisRollover();
         uint32_t getEventTimestamp();
-        LLSLoggerEventList* getRecentEventArray(LLSLoggerEventList*,uint8_t);
+        LLSLoggerEventList* getRecentEventList(LLSLoggerEventList*,uint8_t);
         bool setAverageMessageLength(uint16_t);
 
     private:
