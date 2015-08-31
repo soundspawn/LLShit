@@ -9,7 +9,7 @@
 bool ShitLoggerBase::writeEvent(const __FlashStringHelper* event){return false;}
 bool ShitLoggerBase::writeEvent(const char* event){return false;}
 bool ShitLoggerBase::writeEvent(String event){return false;}
-char* ShitLoggerBase::getLogName(char* ret,uint16_t logsBack){return false;}
+char* ShitLoggerBase::getLogName(char* ret,uint8_t logsBack){return false;}
 char* ShitLoggerBase::getLogName(char* ret){return this->getLogName(ret,0);}
 bool ShitLoggerBase::getFullCurrentLog(){return false;}
 bool ShitLoggerBase::getRecentEventArray(uint8_t numEvents){return false;}

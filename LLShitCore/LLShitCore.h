@@ -6,7 +6,7 @@ class ShitLoggerBase {
         bool writeEvent(const __FlashStringHelper*);
         bool writeEvent(const char*);
         bool writeEvent(String);
-        char* getLogName(char*,uint16_t);
+        char* getLogName(char*,uint8_t);
         char* getLogName(char*);
         bool getFullCurrentLog();
         bool getRecentEventArray(uint8_t);

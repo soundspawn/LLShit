@@ -12,7 +12,7 @@ class LLSLogger:
         bool writeEvent(const __FlashStringHelper*);
         bool setLogPath(const char*);
         char* getFullCurrentLog(char*);
-        char* getLogName(char*,uint16_t);
+        char* getLogName(char*,uint8_t);
         char* getLogName(char*);
         bool setRTC(uint32_t);
         bool detectMillisRollover(uint32_t);
