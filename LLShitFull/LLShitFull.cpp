@@ -308,13 +308,12 @@ bool LLSLogger::setAverageMessageLength(uint16_t avgLength){
     return true;
 }
 
-bool LLSLogger::getRecentEventArray(uint8_t count){
-    //Open current file
-    //Calculate estimated length of (count) messages - avgMessageLength*count
-    //If file size is less than calc'd value, seek to beginning of log
-    //  Else seek to (log_length - calc) skipping the first portion of the file
-    //Save this seek to byte offset (byteStart)
-    //Call a combing function - read bytes in to string buffers (char*?) splitting at newline
+LLSLoggerEventList* LLSLogger::logComber(LLSLoggerEventList* list, File& logFile, uint32_t byteMax){
+    char buffer[40];
+    sprintf_P(buffer,PSTR("TEST"));
+    list = LLSLoggerEvent::addMessage(list,buffer);
+    list = LLSLoggerEvent::addMessage(list,buffer);
+    //list = LLSLoggerEvent::addMessage(list,buffer);
     //  Function needs to receive the endOfFileRead byte offset.  Either EOF or when re-calling
     //      this function the point we started last time
     //  If seeked to beginning - save first message (byte 0 to first newline)
@@ -325,7 +324,109 @@ bool LLSLogger::getRecentEventArray(uint8_t count){
     //  Return on EnoughMessagesCombed - make sure to keep reading to endOfFileRead and if there are more
     //      messages, keep shifting off the oldest.  The goal is not to stop when enough are hit, but to
     //      get the last X messages, so we have to make sure we don't stop short and get messages 1-10 of 11
-    //If EnoughMessagesCombed we're GTG
-    //If endOfFileRead then either go back another (calc'd bytes) or again if that's <0 for offset then BOF
-    //If last call was BOF, then repeat this process but for the previous log
+    return list;
+}
+
+LLSLoggerEventList* LLSLogger::getRecentEventArray(LLSLoggerEventList* list,uint8_t count){
+    uint8_t daysBack = 0;
+    uint8_t date;
+    char* curLog;
+    uint16_t readChunk;
+    File logFile;
+    uint32_t logSize;
+    uint32_t byteOffset = 0;
+
+    while(count > 0){
+        date = this->getLogNumberOnly(daysBack);
+        if(date > 0){
+            //Calculate estimated length of (count) messages - avgMessageLength*count
+            readChunk = count*this->avgMessageLength;
+            //Open current file
+            curLog = this->formatDateToFullLogName(curLog,date);
+            logFile = SD.open(curLog);
+            if(!logFile){
+                break;
+            }
+            logSize = logFile.size();
+            if(logSize-byteOffset < readChunk ){
+                //If file size is less than calc'd value, seek to beginning of log
+                // aka do nothing
+            }else{
+                //Seek to (byteOffset + readChunk) skipping the first portion of the file
+                byteOffset += readChunk;
+                logFile.seek(byteOffset);
+            }
+            //Call a combing function - read bytes in to string buffers splitting at newline
+            list = logComber(list, logFile, readChunk);
+            //If EnoughMessagesCombed (0) we're GTG
+            //If endOfFileRead (1) then either go back another (calc'd bytes) or again if that's <0 for offset then BOF
+            //If last call was BOF, then repeat this process but for the previous log - reset counters
+            logFile.close();
+        }else{
+            //No log, game over man game over
+            break;
+        }
+
+        //Temp
+        break;
+    }
+    delete(curLog);
+    return list;
+}
+
+LLSLoggerEventList* LLSLoggerEvent::removeMessage(LLSLoggerEventList* list,LLSLoggerEventList* target){
+    LLSLoggerEventList* node = list;
+    LLSLoggerEventList* trailer = NULL;
+    while(node != NULL){
+        if(node == target){
+            if(trailer == NULL){
+                //First node
+                list = list->next;
+                delete(node);
+                break;
+            }
+            //Not first node
+            trailer->next = node->next;
+            delete(node);
+            break;
+        }
+        trailer = node;
+        node = node->next;
+    }
+    return list;
+}
+
+LLSLoggerEventList::LLSLoggerEventList(const char* message){
+    this->message = (char*)malloc(sizeof(char)*(strlen(message)+1));
+    strcpy(this->message, message);
+    this->next = NULL;
+}
+
+LLSLoggerEventList::~LLSLoggerEventList(){
+    delete(this->message);
+}
+
+bool LLSLoggerEvent::clearList(LLSLoggerEventList* list){
+    LLSLoggerEventList* node = list->next;
+    while(list != NULL){
+        delete(list);
+        list = node;
+        node = node->next;
+    }
+    return true;
+}
+
+LLSLoggerEventList* LLSLoggerEvent::addMessage(LLSLoggerEventList* list,const char* message){
+    if(list == NULL){
+        return new LLSLoggerEventList(message);
+    }
+
+    //Place on the end
+    LLSLoggerEventList* node = list;
+    while(node->next != NULL){
+        node = node->next;
+    }
+    node->next = new LLSLoggerEventList(message);
+
+    return list;
 }

@@ -1,6 +1,20 @@
 #ifndef LLSHITFULLLIB_H
 #define LLSHITFULLLIB_H
 
+class LLSLoggerEventList{
+    public:
+        char* message;
+        LLSLoggerEventList* next;
+        LLSLoggerEventList(const char*);
+        ~LLSLoggerEventList();
+};
+
+namespace LLSLoggerEvent {
+    LLSLoggerEventList* removeMessage(LLSLoggerEventList*,LLSLoggerEventList*);
+    bool clearList(LLSLoggerEventList*);
+    LLSLoggerEventList* addMessage(LLSLoggerEventList*,const char*);
+}
+
 class LLSLogger:
     public ShitLoggerBase
 {
@@ -17,7 +31,7 @@ class LLSLogger:
         bool detectMillisRollover(uint32_t);
         bool detectMillisRollover();
         uint32_t getEventTimestamp();
-        bool getRecentEventArray(uint8_t);
+        LLSLoggerEventList* getRecentEventArray(LLSLoggerEventList*,uint8_t);
         bool setAverageMessageLength(uint16_t);
 
     private:
@@ -26,6 +40,7 @@ class LLSLogger:
         uint8_t getLogNumberOnly();
         uint8_t getLogNumberOnly(uint8_t);
         char* formatDateToFullLogName(char*, uint8_t);
+        LLSLoggerEventList* logComber(LLSLoggerEventList*,File&,uint32_t);
 
     protected:
         char *logPath;

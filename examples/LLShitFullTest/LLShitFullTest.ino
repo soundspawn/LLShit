@@ -38,8 +38,8 @@ namespace TESTMETRICS {
   #if defined(__AVR_ATmega2560__)
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {
       7230,
-      7209,
-      7217,
+      7207,
+      7215,
       7233,
       0
     };
@@ -111,6 +111,18 @@ void FullLoggerTest(){
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]-4,lls);//subtract size difference of logPath - "" to "logs/"
   loggerSize(lls);
   FullLoggerStringTest(lls);
+
+  Serial.println(F("**** Printing last 10 event messages ****"));
+  LLSLoggerEventList* list = NULL;
+  list = lls.getRecentEventArray(list,10);
+  LLSLoggerEventList* node = list;
+  while(node != NULL){
+    Serial.println(node->message);
+    node = node->next;
+  }
+  LLSLoggerEvent::clearList(list);
+  Serial.println(F("**** END ****"));
+
   //Force the RTC off in case we want to retest the lls object
   lls.setRTC(0);
 }
