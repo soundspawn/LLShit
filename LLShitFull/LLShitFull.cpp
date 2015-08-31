@@ -88,7 +88,9 @@ char* LLSLogger::getFullCurrentLog(char* ret){
 bool LLSLogger::setLogPath(const char* newLogPath){
     this->logPath = (char*)realloc(this->logPath,strlen(newLogPath)+1*sizeof(char));
     strcpy(this->logPath,newLogPath);
-    SD.mkdir(this->logPath);
+    if(!SD.exists(this->logPath)){
+        SD.mkdir(this->logPath);
+    }
 
     return true;
 }
