@@ -310,8 +310,9 @@ bool LLSLogger::setAverageMessageLength(uint16_t avgLength){
 
 LLSLoggerEventList* LLSLogger::logComber(LLSLoggerEventList* list, File& logFile, uint32_t byteMax){
     char buffer[40];
-    sprintf_P(buffer,PSTR("TEST"));
+    sprintf_P(buffer,PSTR("TEST 1"));
     list = LLSLoggerEvent::addMessage(list,buffer);
+    sprintf_P(buffer,PSTR("TEST 2"));
     list = LLSLoggerEvent::addMessage(list,buffer);
     //list = LLSLoggerEvent::addMessage(list,buffer);
     //  Function needs to receive the endOfFileRead byte offset.  Either EOF or when re-calling
