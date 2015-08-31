@@ -25,6 +25,7 @@ class LLSLogger:
         void ClearAllLogsByWilcard(const char*,const char*);
         int wildcmp(const char*, const char*);
         uint8_t getLogNumberOnly();
+        uint8_t getLogNumberOnly(uint8_t);
 
     protected:
         char *logPath;

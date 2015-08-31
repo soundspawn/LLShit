@@ -45,18 +45,51 @@ LLSLogger::~LLSLogger(){
     delete(this->logPath);
 }
 
-uint8_t LLSLogger::getLogNumberOnly(){
+/**
+  * Return the log number (1-31) representing the date
+  * If daysBack > 0 go back the appropriate number of days
+  *     Rules when going back:
+  *         Check for existence of log - never return a
+  *             log number that fails SD.exists()
+  *         Return 0 if there is no log (current day is 3, 2 doesn't exist etc)
+  *         If we go back from 1, try 31, 30, and 29 without the above return 0
+  *             it's possible we're coming around to Feb.  However if there's
+  *             no 28-31 then we know to return 0
+  */
+uint8_t LLSLogger::getLogNumberOnly(uint8_t daysBack){
+    //Ensure we never get a 0... somehow we do when the function runs
+    //  early in execution (first couple ms)
     uint8_t curDay = max(1,day());
-    if(curDay != this->lastLogDay){
-        this->lastLogDay = curDay;
-        this->newLog = 1;
+    //If we just want the standard "current log number"
+    if(daysBack == 0){
+        //Detect if this is a new log number relative to last logged event
+        if(curDay != this->lastLogDay){
+            //Reset flags if this is new
+            this->lastLogDay = curDay;
+            this->newLog = 1;
+        }
+    }else{
+        //We want a previous log, loop until we're back far enough
+        while(daysBack > 0){
+            //Go back one day
+            curDay--;
+            //If we need to wrap around
+            if(curDay == 0){
+                curDay = 31;
+            }
+            if(!SD.exists())
+            //Decrement
+            daysBack--;
+        }
     }
+    //Return the day
     return curDay;
 }
+uint8_t LLSLogger::getLogNumberOnly(){
+    return this->getLogNumberOnly(0);
+}
 
-char* LLSLogger::getLogName(char* logName, uint16_t logsBack){
-    //Ignore logsBack for now
-
+char* LLSLogger::getLogName(char* logName, uint8_t logsBack){
     //Ensure char array is of suitable size
     logName = (char*)realloc(logName,sizeof(char)*13);//12345678.123\n
 
