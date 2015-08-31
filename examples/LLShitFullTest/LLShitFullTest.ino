@@ -38,7 +38,7 @@ namespace TESTMETRICS {
   #if defined(__AVR_ATmega2560__)
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {
       7230,
-      7211,
+      7209,
       7217,
       7233,
       0
