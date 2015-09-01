@@ -31,7 +31,7 @@ class LLSLogger:
         bool detectMillisRollover(uint32_t);
         bool detectMillisRollover();
         uint32_t getEventTimestamp();
-        LLSLoggerEventList* getRecentEventList(LLSLoggerEventList*,uint8_t);
+        LLSLoggerEventList* getRecentEventList(LLSLoggerEventList*,int16_t);
         bool setAverageMessageLength(uint16_t);
 
     private:
@@ -40,7 +40,7 @@ class LLSLogger:
         uint8_t getLogNumberOnly();
         uint8_t getLogNumberOnly(uint8_t);
         char* formatDateToFullLogName(char*, uint8_t);
-        LLSLoggerEventList* logComber(LLSLoggerEventList*,File&,uint32_t);
+        LLSLoggerEventList* logComber(LLSLoggerEventList*,File&,uint32_t&,int16_t&,uint32_t,uint8_t&);
 
     protected:
         char *logPath;

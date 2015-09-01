@@ -77,7 +77,7 @@ bool ramIsWorker(unsigned int testValue,unsigned int objSize, unsigned long line
 void FullLoggerStringTest(LLSLogger &lls){
   String stringTest;
   stringTest.reserve(20);
-  stringTest = F("Testing Strings");
+  stringTest = F("(3) Testing Strings");
   lls.writeEvent(stringTest);
 }
 
@@ -88,14 +88,14 @@ void FullLoggerTest(){
 
   // Create a ramless event via char*, normally we'd just use Flash Mem directly
   char* event = new char[20];
-  strcpy_P(event,PSTR("Testing Char*"));
+  strcpy_P(event,PSTR("(1) Testing Char*"));
   lls.writeEvent(event);
   delete(event);
   loggerSize(lls);
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
 
   //Use Flash Mem to post an event
-  lls.writeEvent(F("Testing Flash"));
+  lls.writeEvent(F("(2) Testing Flash"));
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
 
   //Use a String (in closure because fuck strings)
@@ -113,8 +113,14 @@ void FullLoggerTest(){
   FullLoggerStringTest(lls);
 
   Serial.println(F("**** Printing last 10 event messages ****"));
+  logPath = new char[20];
+  strcpy_P(logPath,PSTR("/"));
+  lls.setLogPath(logPath);
+  delete(logPath);
+  lls.setRTC(50);
+  lls.setAverageMessageLength(50);
   LLSLoggerEventList* list = NULL;
-  list = lls.getRecentEventList(list,10);
+  list = lls.getRecentEventList(list,3);
   LLSLoggerEventList* node = list;
   while(node != NULL){
     Serial.println(node->message);

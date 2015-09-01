@@ -84,6 +84,8 @@ uint8_t LLSLogger::getLogNumberOnly(uint8_t daysBack){
                 if(curDay <= 28){
                     //See "Feb" rule in function notes
                     return 0;
+                }else{
+                    continue;
                 }
             }
             //Decrement
@@ -108,7 +110,7 @@ char* LLSLogger::formatDateToFullLogName(char* ret,uint8_t date){
     char* logName;
     logName = this->getLogName(logName,date);
     uint8_t nameLength;
-    nameLength  = strlen(this->logPath)+14;
+    nameLength = strlen(this->logPath)+strlen(logName)+1;
 
     char format[strlen(LLSHITFULL_STRING::FULL_CURRENT_LOG_FORMAT_STRING)+1];
     strcpy_P(format, (PGM_P)pgm_read_word(&(LLSHITFULL_STRING::LLSHITFULL_STRING_TABLE[LLSHITFULL_STRING::FULL_CURRENT_LOG_FORMAT])));
@@ -308,34 +310,94 @@ bool LLSLogger::setAverageMessageLength(uint16_t avgLength){
     return true;
 }
 
-LLSLoggerEventList* LLSLogger::logComber(LLSLoggerEventList* list, File& logFile, uint32_t byteMax){
-    char buffer[40];
-    sprintf_P(buffer,PSTR("TEST 1"));
-    list = LLSLoggerEvent::addMessage(list,buffer);
-    sprintf_P(buffer,PSTR("TEST 2"));
-    list = LLSLoggerEvent::addMessage(list,buffer);
-    //list = LLSLoggerEvent::addMessage(list,buffer);
-    //  Function needs to receive the endOfFileRead byte offset.  Either EOF or when re-calling
-    //      this function the point we started last time
+/**
+  * Combs the open file for messages (\n separated)
+  *     Manipulates LLSLoggerEventList*, returns a value to retVal
+  */
+LLSLoggerEventList* LLSLogger::logComber(LLSLoggerEventList* list, File& logFile, uint32_t &hardStopByte, int16_t &count, uint32_t byteMax, uint8_t &retVal){
+    uint16_t bufferSize = this->avgMessageLength*2;
+    uint16_t pos = 0;
+    char* buffer = (char*)malloc(sizeof(char)*bufferSize);
+    bool skippingPreData = true;
+    bool readingToNextNLOnly = false;
+    uint32_t newHardStop = hardStopByte;
+    LLSLoggerEventList* newList = NULL;
+
     //  If seeked to beginning - save first message (byte 0 to first newline)
     //      Else skip first message (assume we were midway in to the message)
-    //  Each newline decrease the remaining messages to comb (decrease count?)
-    //  Return on endOfFileRead - either EOF or hit a specified offset
-    //      If specified offset, go forward to EOF or next newline first (capture that partial message)
-    //  Return on EnoughMessagesCombed - make sure to keep reading to endOfFileRead and if there are more
-    //      messages, keep shifting off the oldest.  The goal is not to stop when enough are hit, but to
-    //      get the last X messages, so we have to make sure we don't stop short and get messages 1-10 of 11
-    return list;
+    if(logFile.position() == 0){
+        skippingPreData = false;
+    }
+    while(true){
+        if(logFile.position() >= hardStopByte){
+            break;
+        }
+        buffer[pos] = logFile.read();
+        if(pos >= byteMax && !readingToNextNLOnly){
+            readingToNextNLOnly = true;
+        }
+        if(buffer[pos] == -1){
+            break;
+        }
+        //  Each newline decrease the remaining messages to comb (decrease count?)
+        if(buffer[pos] == '\n'){
+            newHardStop = min(logFile.position()+1,newHardStop);
+            buffer[pos] = '\0';
+            if(!skippingPreData){
+                newList = LLSLoggerEvent::addMessage(newList,buffer);
+                count--;
+                if(count < 0){
+                    newList = LLSLoggerEvent::removeMessage(newList,newList);
+                    count++;
+                }
+                if(readingToNextNLOnly){
+                    break;
+                }
+            }
+            skippingPreData = false;
+            pos = 0;
+            continue;
+        }
+        pos++;
+        if(pos == bufferSize){
+            bufferSize += this->avgMessageLength;
+            buffer = (char*)realloc(buffer,sizeof(char)*bufferSize);
+            if(buffer == NULL){
+                //Realloc failed, abort, abort !
+                count = 0;
+                break;
+            }
+        }
+    }
+    if(count == 0){
+        retVal = 0;
+    }else{
+        retVal = 1;
+    }
+    delete(buffer);
+    hardStopByte = newHardStop;
+    if(newList != NULL){
+        LLSLoggerEventList *node = newList;
+        while(node->next != NULL){
+            node = node->next;
+        }
+        node->next = list;
+        return newList;
+    }else{
+        return list;
+    }
 }
 
-LLSLoggerEventList* LLSLogger::getRecentEventList(LLSLoggerEventList* list,uint8_t count){
+LLSLoggerEventList* LLSLogger::getRecentEventList(LLSLoggerEventList* list,int16_t count){
     uint8_t daysBack = 0;
     uint8_t date;
-    char* curLog;
+    char* curLog = new char[0];
     uint16_t readChunk;
     File logFile;
     uint32_t logSize;
     uint32_t byteOffset = 0;
+    uint32_t stopByte = -1;
+    uint8_t combReturn;
 
     while(count > 0){
         date = this->getLogNumberOnly(daysBack);
@@ -349,27 +411,37 @@ LLSLoggerEventList* LLSLogger::getRecentEventList(LLSLoggerEventList* list,uint8
                 break;
             }
             logSize = logFile.size();
-            if(logSize-byteOffset < readChunk ){
+            if(logSize-byteOffset <= readChunk ){
                 //If file size is less than calc'd value, seek to beginning of log
-                // aka do nothing
+                readChunk = logSize-byteOffset;
             }else{
                 //Seek to (byteOffset + readChunk) skipping the first portion of the file
                 byteOffset += readChunk;
-                logFile.seek(byteOffset);
+                logFile.seek(logSize-byteOffset);
             }
             //Call a combing function - read bytes in to string buffers splitting at newline
-            list = logComber(list, logFile, readChunk);
+            list = logComber(list, logFile, stopByte, count, readChunk, combReturn);
             //If EnoughMessagesCombed (0) we're GTG
+            if(combReturn == 0){
+                logFile.close();
+                break;
+            }
             //If endOfFileRead (1) then either go back another (calc'd bytes) or again if that's <0 for offset then BOF
-            //If last call was BOF, then repeat this process but for the previous log - reset counters
+            if(combReturn == 1){
+                //If last call was BOF, then repeat this process but for the previous log - reset counters
+                if(logSize-byteOffset == readChunk){
+                    //Go back an additional day
+                    daysBack++;
+                    //Reset byteOffset
+                    byteOffset = 0;
+                    stopByte = -1;
+                }
+            }
             logFile.close();
         }else{
             //No log, game over man game over
             break;
         }
-
-        //Temp
-        break;
     }
     delete(curLog);
     return list;
