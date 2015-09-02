@@ -70,7 +70,7 @@ uint8_t LLSLogger::getLogNumberOnly(uint8_t daysBack){
             this->newLog = 1;
         }
     }else{
-        char* buffer = new char;
+        char* buffer = new char[0];
         //We want a previous log, loop until we're back far enough
         while(daysBack > 0){
             //Go back one day
@@ -107,7 +107,7 @@ char* LLSLogger::getLogName(char* logName, uint8_t date){
 }
 
 char* LLSLogger::formatDateToFullLogName(char* ret,uint8_t date){
-    char* logName;
+    char* logName = new char[0];
     logName = this->getLogName(logName,date);
     uint8_t nameLength;
     nameLength = strlen(this->logPath)+strlen(logName)+1;
