@@ -83,7 +83,8 @@ uint8_t LLSLogger::getLogNumberOnly(uint8_t daysBack){
             if(!SD.exists(buffer)){
                 if(curDay <= 28){
                     //See "Feb" rule in function notes
-                    return 0;
+                    curDay = 0;
+                    break;
                 }else{
                     continue;
                 }
