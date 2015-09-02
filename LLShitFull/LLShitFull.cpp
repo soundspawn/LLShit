@@ -315,9 +315,9 @@ bool LLSLogger::setAverageMessageLength(uint16_t avgLength){
   *     Manipulates LLSLoggerEventList*, returns a value to retVal
   */
 LLSLoggerEventList* LLSLogger::logComber(LLSLoggerEventList* list, File& logFile, uint32_t &hardStopByte, int16_t &count, uint32_t byteMax, uint8_t &retVal){
-    uint16_t bufferSize = this->avgMessageLength*2;
+    uint16_t bufferSize = this->avgMessageLength;
     uint16_t pos = 0;
-    char* buffer = (char*)malloc(sizeof(char)*bufferSize);
+    char* buffer = (char*)malloc(sizeof(char)*bufferSize*2);
     bool skippingPreData = true;
     bool readingToNextNLOnly = false;
     uint32_t newHardStop = hardStopByte;
