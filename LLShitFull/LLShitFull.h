@@ -21,6 +21,9 @@ class LLSLogger:
     public:
         LLSLogger();
         ~LLSLogger();
+        bool (LLSLogger::*writeEventPtr)(const char*);
+        LLSLoggerEventList* (LLSLogger::*getRecentEventListPtr)(LLSLoggerEventList*,int16_t);
+        LLSLoggerEventList* getRecentEventList(LLSLoggerEventList*,int16_t);
         bool writeEvent(const char*);
         bool writeEvent(String);
         bool writeEvent(const __FlashStringHelper*);
@@ -31,10 +34,15 @@ class LLSLogger:
         bool detectMillisRollover(uint32_t);
         bool detectMillisRollover();
         uint32_t getEventTimestamp();
-        LLSLoggerEventList* getRecentEventList(LLSLoggerEventList*,int16_t);
         bool setAverageMessageLength(uint16_t);
+        bool ramMode(uint8_t);
+        bool fileMode();
 
     private:
+        bool writeEventRam(const char*);
+        LLSLoggerEventList* getRecentEventListRam(LLSLoggerEventList*,int16_t);
+        bool writeEventFile(const char*);
+        LLSLoggerEventList* getRecentEventListFile(LLSLoggerEventList*,int16_t);
         void ClearAllLogsByWilcard(const char*,const char*);
         int wildcmp(const char*, const char*);
         uint8_t getLogNumberOnly();
@@ -49,6 +57,8 @@ class LLSLogger:
         uint8_t newLog = 1;
         uint8_t lastLogDay = 0;
         uint16_t avgMessageLength = 50;
+        uint8_t ramLines = 0;
+        LLSLoggerEventList* ramList = NULL;
 };
 
 #endif

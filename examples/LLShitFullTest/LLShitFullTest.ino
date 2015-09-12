@@ -38,7 +38,7 @@ namespace TESTMETRICS {
   #if defined(__AVR_ATmega2560__)
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {
       7230,
-      7207,
+      7196,
       7215,
       7233,
       0
@@ -133,6 +133,41 @@ void FullLoggerTest(){
   lls.setRTC(0);
 }
 
+void RamLoggerFiveMessagesTest(){
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_BEGIN],NULL);
+  LLSLogger lls = LLSLogger();
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
+  lls.ramMode(0);
+  //No change
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
+  lls.ramMode(1);
+  //+10 (blank string plus pointer)
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]-10,lls);
+  lls.ramMode(5);
+  //Increase to five... sb 50 bytes
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]-50,lls);
+
+  char* event = new char[20];
+  strcpy_P(event,PSTR("(1) Testing Char*"));
+  for(uint8_t i = 0; i < 20; i++){//If this is a low number... like 9... it will burn 2 bytes (wtf)
+    lls.writeEvent(event);
+  }
+  delete(event);
+  //Now 16 bytes per message (message length 18 with '\0' but old was 2), plus 10 per object
+  ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE]-(26*5),lls);
+
+  Serial.println(F("Dumping Ram Log Mode"));
+  LLSLoggerEventList* list = NULL;
+  list = lls.getRecentEventList(list,0);
+  LLSLoggerEventList* node = list;
+  while(node != NULL){
+    Serial.println(node->message);
+    node = node->next;
+  }
+  LLSLoggerEvent::clearList(list);
+  Serial.println(F("**** END ****"));
+}
+
 void deleteTestLogs(){
   char buffer[13];
   strcpy_P(buffer,(PGM_P)pgm_read_word(&(TESTMETRICS::STRING_TABLE[TESTMETRICS::LOG_1_FILE])));
@@ -188,6 +223,8 @@ void setup() {
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
   Serial.println(F("Re-running Full Logger Test"));
   FullLoggerTest();
+  ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
+  RamLoggerFiveMessagesTest();
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
 
   checkLogs();

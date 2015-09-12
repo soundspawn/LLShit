@@ -37,12 +37,53 @@ namespace LLSHITFULL_STRING {
 }
 
 LLSLogger::LLSLogger(){
+    this->fileMode();
     this->logPath = new char[sizeof(char)*(strlen(LLSHITFULL_STRING::DEFAULT_BASE_PATH_STRING)+1)];
     strcpy_P(this->logPath, (PGM_P)pgm_read_word(&(LLSHITFULL_STRING::LLSHITFULL_STRING_TABLE[LLSHITFULL_STRING::DEFAULT_BASE_PATH])));
 }
 
 LLSLogger::~LLSLogger(){
     delete(this->logPath);
+}
+
+bool LLSLogger::fileMode(){
+    this->writeEventPtr = &LLSLogger::writeEventFile;
+    this->getRecentEventListPtr = &LLSLogger::getRecentEventListFile;
+    LLSLoggerEvent::clearList(this->ramList);
+}
+
+bool LLSLogger::ramMode(uint8_t count){
+    uint8_t ramLineCount = 0;
+    const char* blank PROGMEM = "";
+
+    this->writeEventPtr = &LLSLogger::writeEventRam;
+    this->getRecentEventListPtr = &LLSLogger::getRecentEventListRam;
+    this->ramLines = count;
+    //Set ramList to desired count
+    LLSLoggerEventList *node = this->ramList;
+    LLSLoggerEventList *newList = NULL;
+    while(node != NULL){
+        ramLineCount++;
+        node = node->next;
+    }
+    //Adding blank lines
+    if(ramLineCount < count){
+        while(ramLineCount < count){
+            newList = LLSLoggerEvent::addMessage(newList,blank);
+            ramLineCount++;
+        }
+        //Merge to beginning of list
+        node = newList;
+        while(node->next != NULL){
+            node = node->next;
+        }
+        node->next = this->ramList;
+        this->ramList = newList;
+    }
+    //Trim extra lines
+    while(ramLineCount > count){
+        this->ramList = LLSLoggerEvent::removeMessage(this->ramList,this->ramList);
+    }
 }
 
 /**
@@ -208,6 +249,18 @@ bool LLSLogger::writeEvent(const __FlashStringHelper* event){
 }
 
 bool LLSLogger::writeEvent(const char* event){
+    return (this->*writeEventPtr)(event);
+}
+
+bool LLSLogger::writeEventRam(const char* event){
+    //Remove oldest message
+    this->ramList = LLSLoggerEvent::removeMessage(this->ramList,this->ramList);
+    //Add newest message
+    this->ramList = LLSLoggerEvent::addMessage(this->ramList,event);
+    return true;
+}
+
+bool LLSLogger::writeEventFile(const char* event){
     char* logFile;
     File fileHandle;
     char timestampFormat[5];
@@ -389,7 +442,26 @@ LLSLoggerEventList* LLSLogger::logComber(LLSLoggerEventList* list, File& logFile
     }
 }
 
+/**
+  * Generic getRecentEventList
+  *     Calls the appropriate function to get recent event list
+  */
 LLSLoggerEventList* LLSLogger::getRecentEventList(LLSLoggerEventList* list,int16_t count){
+    return (this->*getRecentEventListPtr)(list,count);
+}
+
+/**
+  * Returns Recent Event List in Ram Mode
+  *     Simply returns the ramList already managed by the logging functions
+  */
+LLSLoggerEventList* LLSLogger::getRecentEventListRam(LLSLoggerEventList* list,int16_t count){
+    return ramList;
+}
+
+/**
+  * Returns Recent Event List in File Mode
+  */
+LLSLoggerEventList* LLSLogger::getRecentEventListFile(LLSLoggerEventList* list,int16_t count){
     uint8_t daysBack = 0;
     uint8_t date;
     char* curLog = new char[0];
@@ -448,6 +520,26 @@ LLSLoggerEventList* LLSLogger::getRecentEventList(LLSLoggerEventList* list,int16
     return list;
 }
 
+LLSLoggerEventList::LLSLoggerEventList(const char* message){
+    this->message = (char*)malloc(sizeof(char)*(strlen(message)+1));
+    strcpy(this->message, message);
+    this->next = NULL;
+}
+
+LLSLoggerEventList::~LLSLoggerEventList(){
+    delete(this->message);
+}
+
+bool LLSLoggerEvent::clearList(LLSLoggerEventList* list){
+    LLSLoggerEventList* node = list->next;
+    while(list != NULL){
+        delete(list);
+        list = node;
+        node = node->next;
+    }
+    return true;
+}
+
 LLSLoggerEventList* LLSLoggerEvent::removeMessage(LLSLoggerEventList* list,LLSLoggerEventList* target){
     LLSLoggerEventList* node = list;
     LLSLoggerEventList* trailer = NULL;
@@ -468,26 +560,6 @@ LLSLoggerEventList* LLSLoggerEvent::removeMessage(LLSLoggerEventList* list,LLSLo
         node = node->next;
     }
     return list;
-}
-
-LLSLoggerEventList::LLSLoggerEventList(const char* message){
-    this->message = (char*)malloc(sizeof(char)*(strlen(message)+1));
-    strcpy(this->message, message);
-    this->next = NULL;
-}
-
-LLSLoggerEventList::~LLSLoggerEventList(){
-    delete(this->message);
-}
-
-bool LLSLoggerEvent::clearList(LLSLoggerEventList* list){
-    LLSLoggerEventList* node = list->next;
-    while(list != NULL){
-        delete(list);
-        list = node;
-        node = node->next;
-    }
-    return true;
 }
 
 LLSLoggerEventList* LLSLoggerEvent::addMessage(LLSLoggerEventList* list,const char* message){
