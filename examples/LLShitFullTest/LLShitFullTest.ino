@@ -6,8 +6,7 @@
 #include <SpawwnStd.h>
 #include <SpawwnNet.h>
 #include <Time.h>
-#include <LLShitCore.h>
-#include <LLShitFull.h>
+#include <LLShit.h>
 
 #define SDCARD_PIN 4
 #define SDCARD_SUPPORT_PIN 10

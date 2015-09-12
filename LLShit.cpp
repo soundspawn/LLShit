@@ -6,8 +6,7 @@
 
 #include <SD.h>
 #include <Time.h>
-#include "LLShitCore.h"
-#include "LLShitFull.h"
+#include "LLShit.h"
 
 #define DEBUG
 

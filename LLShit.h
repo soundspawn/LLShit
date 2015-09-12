@@ -15,8 +15,7 @@ namespace LLSLoggerEvent {
     LLSLoggerEventList* addMessage(LLSLoggerEventList*,const char*);
 }
 
-class LLSLogger:
-    public ShitLoggerBase
+class LLSLogger
 {
     public:
         LLSLogger();
