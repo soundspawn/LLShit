@@ -43,6 +43,13 @@ LLSLogger::LLSLogger(){
 
 LLSLogger::~LLSLogger(){
     delete(this->logPath);
+    LLSLoggerEvent::clearList(this->ramList);
+}
+
+bool LLSLogger::offMode(){
+    this->writeEventPtr = &LLSLogger::writeEventNone;
+    this->getRecentEventListPtr = &LLSLogger::getRecentEventListNone;
+    LLSLoggerEvent::clearList(this->ramList);
 }
 
 bool LLSLogger::fileMode(){
@@ -250,6 +257,9 @@ bool LLSLogger::writeEvent(const __FlashStringHelper* event){
 bool LLSLogger::writeEvent(const char* event){
     return (this->*writeEventPtr)(event);
 }
+bool LLSLogger::writeEventNone(const char* event){
+    return true;
+}
 
 bool LLSLogger::writeEventRam(const char* event){
     //Remove oldest message
@@ -447,6 +457,10 @@ LLSLoggerEventList* LLSLogger::logComber(LLSLoggerEventList* list, File& logFile
   */
 LLSLoggerEventList* LLSLogger::getRecentEventList(LLSLoggerEventList* list,int16_t count){
     return (this->*getRecentEventListPtr)(list,count);
+}
+
+LLSLoggerEventList* LLSLogger::getRecentEventListNone(LLSLoggerEventList* list,int16_t count){
+    return NULL;
 }
 
 /**

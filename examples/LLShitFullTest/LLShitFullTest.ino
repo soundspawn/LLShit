@@ -133,6 +133,8 @@ void FullLoggerTest(){
 }
 
 void RamLoggerFiveMessagesTest(){
+  //Might need to move this in to the for loop if off by one byte
+  uint16_t i;
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_BEGIN],NULL);
   LLSLogger lls = LLSLogger();
   ramIs(TESTMETRICS::ram[TESTMETRICS::FULL_LOGGER_INSTANCE_MADE],lls);
@@ -148,7 +150,7 @@ void RamLoggerFiveMessagesTest(){
 
   char* event = new char[20];
   strcpy_P(event,PSTR("(1) Testing Char*"));
-  for(uint8_t i = 0; i < 20; i++){//If this is a low number... like 9... it will burn 2 bytes (wtf)
+  for(i = 0; i < 20; i++){//If this is a low number... like 9... it will burn 2 bytes (wtf)
     lls.writeEvent(event);
   }
   delete(event);
@@ -163,7 +165,6 @@ void RamLoggerFiveMessagesTest(){
     Serial.println(node->message);
     node = node->next;
   }
-  LLSLoggerEvent::clearList(list);
   Serial.println(F("**** END ****"));
 }
 
@@ -223,6 +224,9 @@ void setup() {
   Serial.println(F("Re-running Full Logger Test"));
   FullLoggerTest();
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
+  Serial.println(F("Ram Mode Test"));
+  RamLoggerFiveMessagesTest();
+  Serial.println(F("Re-running Ram Mode Test"));
   RamLoggerFiveMessagesTest();
   ramIs(TESTMETRICS::ram[TESTMETRICS::START_IDLE],NULL);
 

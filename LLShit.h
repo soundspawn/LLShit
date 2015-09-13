@@ -36,8 +36,11 @@ class LLSLogger
         bool setAverageMessageLength(uint16_t);
         bool ramMode(uint8_t);
         bool fileMode();
+        bool offMode();
 
     private:
+        bool writeEventNone(const char*);
+        LLSLoggerEventList* getRecentEventListNone(LLSLoggerEventList*,int16_t);
         bool writeEventRam(const char*);
         LLSLoggerEventList* getRecentEventListRam(LLSLoggerEventList*,int16_t);
         bool writeEventFile(const char*);
