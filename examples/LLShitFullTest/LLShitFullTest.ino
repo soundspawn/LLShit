@@ -1,10 +1,6 @@
 #include "Arduino.h"
 #include <SD.h>
 #include <SPI.h>
-#include <Ethernet.h>
-#include <SpawwnCore.h>
-#include <SpawwnStd.h>
-#include <SpawwnNet.h>
 #include <Time.h>
 #include <LLShit.h>
 
@@ -50,6 +46,65 @@ namespace TESTMETRICS {
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {};
   #endif
 }
+
+//Support Header (from outside project)
+struct __freelist {
+  size_t sz;
+  struct __freelist *nx;
+};
+
+/* Calculates the size of the free list */
+int freeListSize() {
+  extern struct __freelist *__flp;  
+  struct __freelist* current;
+  uint16_t total = 0;
+
+  for (current = __flp; current; current = current->nx) {
+    total += 2; /* Add two bytes for the memory block's header  */
+    total += (int) current->sz;
+  }
+
+  return total;
+}
+
+int freeRam() {
+  uint16_t free_memory;
+  
+  extern struct __freelist *__flp;
+  extern int __heap_start;
+  extern int *__brkval;
+
+  if ((int)__brkval == 0) {
+    free_memory = ((int)&free_memory) - ((int)&__heap_start);
+  } else {
+    free_memory = ((int)&free_memory) - ((int)__brkval);
+    free_memory += freeListSize();
+  }
+  return free_memory+sizeof(free_memory);
+}
+
+int freeUnfragRam(){
+  extern int __heap_start, *__brkval;
+  uint16_t v;
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+}
+
+void StreamPrint_progmem(Print &out,PGM_P format,...){
+    char formatString[128], *ptr;
+    strncpy_P( formatString, format, sizeof(formatString) );
+    formatString[ sizeof(formatString)-2 ]='\0'; 
+    ptr=&formatString[ strlen(formatString)+1 ];
+    va_list args;
+    va_start (args,format);
+    vsnprintf(ptr, sizeof(formatString)-1-strlen(formatString), formatString, args );
+    va_end (args);
+    formatString[ sizeof(formatString)-1 ]='\0'; 
+    out.print(ptr);
+}
+
+#define Serialprint(format, ...) StreamPrint_progmem(Serial,PSTR(format),##__VA_ARGS__)
+#define Streamprint(stream,format, ...) StreamPrint_progmem(stream,PSTR(format),##__VA_ARGS__)
+//End Support Header
 
 void loggerObjectSize(unsigned int objSize){
   Serial.print(F("Logger Object Size: "));
