@@ -32,10 +32,10 @@ namespace TESTMETRICS {
 
   #if defined(__AVR_ATmega2560__)
     const PROGMEM unsigned int ram[NUM_RAM_VALUES+1] = {
-      7230,
-      7196,
-      7215,
-      7233,
+      7302,
+      7268,
+      7287,
+      7305,
       0
     };
   #elif defined(__AVR_ATmega328P__)
