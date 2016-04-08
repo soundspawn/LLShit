@@ -47,6 +47,7 @@ namespace TESTMETRICS {
   #endif
 }
 
+//****************************************************************************************
 //Support Header (from outside project)
 struct __freelist {
   size_t sz;
@@ -105,6 +106,7 @@ void StreamPrint_progmem(Print &out,PGM_P format,...){
 #define Serialprint(format, ...) StreamPrint_progmem(Serial,PSTR(format),##__VA_ARGS__)
 #define Streamprint(stream,format, ...) StreamPrint_progmem(stream,PSTR(format),##__VA_ARGS__)
 //End Support Header
+//****************************************************************************************
 
 void loggerObjectSize(unsigned int objSize){
   Serial.print(F("Logger Object Size: "));
