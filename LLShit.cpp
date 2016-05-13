@@ -35,7 +35,13 @@ namespace LLSHITFULL_STRING {
 	};
 }
 
+void LLSLogger::loadDefaults(){
+    this->newLog = 1;
+    this->avgMessageLength = 50;
+}
+
 LLSLogger::LLSLogger(){
+    this->loadDefaults();
     this->fileMode();
     this->logPath = new char[sizeof(char)*(strlen(LLSHITFULL_STRING::DEFAULT_BASE_PATH_STRING)+1)];
     strcpy_P(this->logPath, (PGM_P)pgm_read_word(&(LLSHITFULL_STRING::LLSHITFULL_STRING_TABLE[LLSHITFULL_STRING::DEFAULT_BASE_PATH])));

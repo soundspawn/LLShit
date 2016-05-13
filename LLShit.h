@@ -39,6 +39,7 @@ class LLSLogger
         bool offMode();
 
     private:
+        void loadDefaults();
         bool writeEventNone(const char*);
         LLSLoggerEventList* getRecentEventListNone(LLSLoggerEventList*,int16_t);
         bool writeEventRam(const char*);
@@ -54,13 +55,13 @@ class LLSLogger
 
     protected:
         char *logPath;
-        uint32_t timeSync = 0;
-        uint32_t lastMillisLogged = 0;
-        uint8_t newLog = 1;
-        uint8_t lastLogDay = 0;
-        uint16_t avgMessageLength = 50;
-        uint8_t ramLines = 0;
-        LLSLoggerEventList* ramList = NULL;
+        uint32_t timeSync;
+        uint32_t lastMillisLogged;
+        uint8_t newLog;
+        uint8_t lastLogDay;
+        uint16_t avgMessageLength;
+        uint8_t ramLines;
+        LLSLoggerEventList* ramList;
 };
 
 #endif
